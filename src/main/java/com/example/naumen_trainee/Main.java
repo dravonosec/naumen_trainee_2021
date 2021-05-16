@@ -2,21 +2,24 @@ package com.example.naumen_trainee;
 
 import java.io.Console;
 
+import static com.example.naumen_trainee.MazeSolver.GetSolvedMaze;
+import static com.example.naumen_trainee.MazeSolver.MazeParser;
+
 public class Main {
 
     public static void main(String[] args){
         String testStr1 = "...@.\n.####\n.....\n####.\n.X...";
         String testStr2 = "....@\n#.###\n.....\n....X\n.....";
-        var a = MazeSolver.FindPath(testStr1);
-        System.out.println(a);
+        var labyrinth = MazeParser(testStr1);
+        var a = MazeSolver.FindPath(labyrinth);
+        var sm = GetSolvedMaze(a, labyrinth);
+        System.out.println("Нерешенный лабиринт");
+        System.out.println(testStr1);
+        System.out.println("Решенный лабиринт");
+        System.out.println(sm);
 
-//        var point = new Point(0,0);
-//        point.X = 0;
-//        point.Y = 0;
-//        MazeSolver.GetNeighbourPoints(point);
 
-        var p = new Point(1,2);
-        var p2 = new Point(1,2);
-        System.out.println(p.isEqual(p2));
+
+
     }
 }
