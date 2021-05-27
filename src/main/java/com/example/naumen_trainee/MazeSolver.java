@@ -4,114 +4,114 @@ import java.util.*;
 
 public class MazeSolver {
 
-    public static LinkedList<Point> FindPath (char[][] labyrinth){
+    public List<Integer> findPath(char[][] labyrinth){
+        int k = labyrinth.length;
+        int l = labyrinth[0].length;
+        int start = -1;
+        int end = -1;
 
-        var map = new State[labyrinth[0].length][labyrinth.length];
-
-        // Заполняем карту Enum'ами, и сразу получаем начало и конец в лабиринте
-        var start = new Point(0,0);
-        var end = new Point(0,0);
-        for (int x = 0; x < map.length; x++)
-            for (int y = 0; y < map[0].length; y++) {
-                if (labyrinth[x][y] == '.')
-                    map[x][y] = State.Road;
-                if (labyrinth[x][y] == '#')
-                    map[x][y] = State.Wall;
+        var flatLabyrinth = new char [k*l];
+        // Превращаем двумерный лабиринт в одномерный, чтобы одна точка была задана одним индексом
+        // Тогда путь который мы храним будет задан не двумя координатами, а одной, что в теории
+        // экономит память в два раза
+        for (int x = 0; x < labyrinth.length; x++)
+            for (int y = 0; y < labyrinth[0].length; y++) {
+                if (labyrinth[x][y] == '#'){
+                    flatLabyrinth[l*x+y] = '@';
+                    start = l*x + y;
+                }
+                if (labyrinth[x][y] == '.'){
+                    flatLabyrinth[l*x+y] = '@';
+                    start = l*x + y;
+                }
                 if (labyrinth[x][y] == '@'){
-                    map[x][y] = State.Road;
-                    start.X = x;
-                    start.Y = y;
+                    flatLabyrinth[l*x+y] = '@';
+                    start = l*x + y;
                 }
                 if (labyrinth[x][y] == 'X') {
-                    map[x][y] = State.Road;
-                    end.X = x;
-                    end.Y = y;
+                    flatLabyrinth[l*x+y] = 'X';
+                    end = l*x + y;
                 }
             }
 
-        var queue = new ArrayDeque<LinkedList<Point>>();
-        var visited = new HashSet<Point>();
+        var queue = new ArrayDeque<Integer>();
+        var visited = new HashSet<Integer>();
         visited.add(start);
-
-        // добавляем в очередь связный список с началом в точке start
-        var startLinkedList =  new LinkedList<Point>();
-        startLinkedList.add(start);
-        queue.add(startLinkedList);
+        queue.add(start);
 
         while (queue.size() != 0){
-
-
-            var currentList = queue.poll();
-
-
-            var neighbourPoints = GetNeighbourPoints(currentList.element());
-            for (Point neighbourPoint:neighbourPoints
+            var currentIndex = queue.poll();
+            // индекс k или l?
+            var neighbourPoints = getNeighbourPoints(currentIndex, l, visited, flatLabyrinth );
+            for (int neighbourPoint:neighbourPoints
                  ) {
-                // проверяем, что точка находится в пределах лабиринта
-                if (visited.contains(neighbourPoint)) continue;
-                if (neighbourPoint.X < 0 ||
-                        neighbourPoint.X >= map[0].length ||
-                        neighbourPoint.Y <0 ||
-                        neighbourPoint.Y >= map.length
-                )
-                    continue;
-                if (map[neighbourPoint.X][neighbourPoint.Y] == State.Wall) continue;
 
-                var neighbourList = new LinkedList<Point>();
-                neighbourList.add(neighbourPoint);
-                neighbourList.addAll(currentList);
+//                if (visited.contains(neighbourPoint)) continue;
+//                if (neighbourPoint < 0 ||
+//                        neighbourPoint >= map[0].length ||
+//                        neighbourPoint.Y <0 ||
+//                        neighbourPoint.Y >= map.length
+//                )
+//                    continue;
+//
+//                if (labyrinth[neighbourPoint/l][neighbourPoint%l] == '#') continue;
+//                var neighbourList = new LinkedList<Integer>();
+//
+//                neighbourList.add(neighbourPoint);
+//                neighbourList.addAll(currentList);
 
-
-                if (neighbourPoint.equals(end))
-                    return neighbourList;
+                // придумать как хранить путь
                 visited.add(neighbourPoint);
-                queue.add(neighbourList);
+
+                if (neighbourPoint == end)
+                    return neighbourList;
+
+                queue.add(neighbourPoint);
             }
         }
         return null;
     }
 
-    public static String GetSolvedMaze (LinkedList<Point> path, char[][] labyrinth){
+//    public String getSolvedMaze(LinkedList<Point> path, char[][] labyrinth){
+//
+//        for (Point point: path
+//             ) {
+//            var x = point.X;
+//            var y = point.Y;
+//            labyrinth[x][y] = '+';
+//        }
+//        labyrinth[path.getFirst().X][path.getFirst().Y] = 'X';
+//        labyrinth[path.getLast().X][path.getLast().Y] = '@';
+//
+//        String solvedMaze = new String();
+//
+//        for (int x = 0; x < labyrinth.length; x++)
+//            for (int y = 0; y < labyrinth[0].length; y++)
+//            {
+//                solvedMaze += labyrinth[x][y];
+//                if (y == labyrinth[0].length - 1)
+//                    solvedMaze += "\n";
+//            }
+//
+//        return solvedMaze;
+//    }
 
-        for (Point point: path
-             ) {
-            var x = point.X;
-            var y = point.Y;
-            labyrinth[x][y] = '+';
-        }
-        labyrinth[path.getFirst().X][path.getFirst().Y] = 'X';
-        labyrinth[path.getLast().X][path.getLast().Y] = '@';
-
-        String solvedMaze = new String();
-
-        for (int x = 0; x < labyrinth.length; x++)
-            for (int y = 0; y < labyrinth[0].length; y++)
-            {
-                solvedMaze += labyrinth[x][y];
-                if (y == labyrinth[0].length - 1)
-                    solvedMaze += "\n";
-            }
-
-        return solvedMaze;
+    public List<Integer> getNeighbourPoints(int index, int k, HashSet<Integer> visited, char[] labyrinth ){
+        List<Integer> neighbourPoints = List.of();
+        var l = labyrinth.length;
+        // Вроде добавил проверку на выход за карту, но это еще надо проверять
+        if (index+k <= l && !visited.contains(index+k) && labyrinth[index+k] != '#' )
+            neighbourPoints.add(index+k);
+        if (index-k >= l && !visited.contains(index-k) && labyrinth[index-k] != '#' )
+            neighbourPoints.add(index-k);
+        if (index%k + 1 <= k && !visited.contains(index+1) && labyrinth[index+1] != '#')
+            neighbourPoints.add(index+1);
+        if (index%k - 1 >= k && !visited.contains(index-1) && labyrinth[index-1] != '#')
+            neighbourPoints.add(index-1);
+        return neighbourPoints;
     }
 
-    public static ArrayList<Point> GetNeighbourPoints (Point currentPoint){
-        var pointList = new ArrayList<Point>();
-        for (var dy = -1; dy <= 1; dy++)
-            for (var dx = -1; dx <= 1; dx++) {
-                var pt = new Point(0,0);
-                if (dx != 0 && dy != 0) continue;
-                else {
-                    pt.X = currentPoint.X + dx;
-                    pt.Y = currentPoint.Y + dy;
-                    pointList.add(pt);
-                }
-            }
-        pointList.remove(currentPoint);
-        return pointList;
-    }
-
-    public static char[][] MazeParser(String maze){
+    public char[][] mazeParser(String maze){
         String[] splitMaze = maze.split("\n");
         char[][] mazeChar = new char[splitMaze[0].length()][splitMaze.length];
         for (int i = 0; i< splitMaze[0].length();i++ ){
