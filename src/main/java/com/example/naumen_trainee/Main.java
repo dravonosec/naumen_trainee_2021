@@ -1,27 +1,38 @@
 package com.example.naumen_trainee;
 
-import static com.example.naumen_trainee.MazeSolver.getSolvedMaze;
+import java.util.Random;
+
 import static com.example.naumen_trainee.MazeSolver.mazeParser;
 
 public class Main {
 
     public static void main(String[] args){
-//        String testStr1 = "...@.\n.####\n.....\n####.\n.X...";
-//        String testStr2 = "....@\n#.###\n.....\n....X\n.....";
-//        var labyrinth = mazeParser(testStr1);
-//        var a = MazeSolver.findPath(labyrinth);
-//        var sm = getSolvedMaze(a, labyrinth);
-//        System.out.println("Нерешенный лабиринт");
-//        System.out.println(testStr1);
-//        System.out.println("Решенный лабиринт");
-//        System.out.println(sm);
+        String testStr1 = "...@.\n#####\n.....\n####.\n.X...";
+        String testStr2 = "....@\n#.###\n.....\n....X\n.....";
+        StringBuilder s = new StringBuilder();
+        Random rnd = new Random();
 
-//        for(var i = 0; i<3;i++)
-//            for(var j = 0; j<3;j++)
-//                arr[i*3+j]
-//
-//        for(var i = 0; i<9;i++)
-//            arr[i/3][i%3]
+        for (int i = 0; i < 1000; i++) {
+            for (int j = 0; j < 1000; j++) {
+                if (i == 0 && j == 0)
+                    s.append('@');
+                else if (i == 999 && j == 999)
+                    s.append('X');
+                else if (rnd.nextInt(100) < 20)
+                    s.append('#');
+                else s.append('.');
+            }
+            if (i < 999)
+                s.append('\n');
+        }
 
+
+        var a = MazeSolver.mazeParser(testStr1);
+        var b = MazeSolver.findRoute(a);
+        for (int i = 0; i < b.length; i++) {
+            for (int j = 0; j < b[0].length; j++)
+                System.out.print(b[i][j]);
+            System.out.println();
+        }
     }
 }
